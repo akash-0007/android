@@ -33,6 +33,7 @@ import org.amahi.anywhere.activity.ServerFileImageActivity;
 import org.amahi.anywhere.activity.ServerFileVideoActivity;
 import org.amahi.anywhere.activity.ServerFileWebActivity;
 import org.amahi.anywhere.activity.ServerFilesActivity;
+import org.amahi.anywhere.activity.WebViewActivity;
 import org.amahi.anywhere.cache.CacheModule;
 import org.amahi.anywhere.fragment.AudioListFragment;
 import org.amahi.anywhere.fragment.NavigationFragment;
@@ -47,6 +48,7 @@ import org.amahi.anywhere.fragment.UploadSettingsFragment;
 import org.amahi.anywhere.server.ApiModule;
 import org.amahi.anywhere.service.AudioService;
 import org.amahi.anywhere.service.DownloadService;
+import org.amahi.anywhere.service.ServiceNotifier;
 import org.amahi.anywhere.service.UploadService;
 import org.amahi.anywhere.service.VideoService;
 import org.amahi.anywhere.task.AudioMetadataRetrievingTask;
@@ -99,9 +101,11 @@ import dagger.Provides;
         VideoService.class,
         MainTVFragment.class,
         TVWebViewActivity.class,
+        WebViewActivity.class,
         ServerFileTvFragment.class,
         UploadService.class,
         DownloadService.class,
+        ServiceNotifier.class,
         UploadManager.class,
         TvPlaybackVideoFragment.class,
         TvPlaybackVideoActivity.class,

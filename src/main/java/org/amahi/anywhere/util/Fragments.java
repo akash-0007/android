@@ -21,13 +21,17 @@ package org.amahi.anywhere.util;
 
 import android.content.Context;
 import android.os.Bundle;
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import org.amahi.anywhere.fragment.AudioListFragment;
 import org.amahi.anywhere.fragment.FileOptionsDialogFragment;
+import org.amahi.anywhere.fragment.FileFilterOptionsDialogFragment;
+import org.amahi.anywhere.fragment.FileSortOptionsDialogFragment;
 import org.amahi.anywhere.fragment.NavigationFragment;
 import org.amahi.anywhere.fragment.ServerAppsFragment;
 import org.amahi.anywhere.fragment.ServerFileAudioFragment;
@@ -56,6 +60,7 @@ public final class Fragments {
         public static final String FILE_OPTION = "file_option";
         public static final String IS_OFFLINE_FRAGMENT = "is_offline_fragment";
         public static final String DIALOG_TYPE = "dialog_type";
+        public static final String FILE_UNIQUE_KEY = "file_unique_key";
 
         private Arguments() {
         }
@@ -178,15 +183,26 @@ public final class Fragments {
             return fragment;
         }
 
-        public static BottomSheetDialogFragment buildOfflineFileOptionsDialogFragment() {
+        public static BottomSheetDialogFragment buildOfflineFileOptionsDialogFragment(ServerFile file) {
             BottomSheetDialogFragment fragment = new FileOptionsDialogFragment();
 
             Bundle bundle = new Bundle();
             bundle.putBoolean(Arguments.IS_OFFLINE_FRAGMENT, true);
+            bundle.putParcelable(Arguments.SERVER_FILE, file);
             fragment.setArguments(bundle);
             return fragment;
         }
 
+        public static BottomSheetDialogFragment buildFileSortOptionsDialogFragment() {
+
+            return new FileSortOptionsDialogFragment();
+
+        }
+
+        public static BottomSheetDialogFragment buildFileFilterOptionsDialogFragment() {
+
+            return new FileFilterOptionsDialogFragment();
+        }
     }
 
     public static final class Operator {

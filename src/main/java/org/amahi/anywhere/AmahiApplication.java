@@ -31,21 +31,12 @@ import android.preference.PreferenceManager;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatDelegate;
 
-import com.crashlytics.android.Crashlytics;
-
-import org.acra.ACRA;
-import org.acra.ReportField;
-import org.acra.config.CoreConfigurationBuilder;
-import org.acra.config.MailSenderConfigurationBuilder;
-import org.acra.config.ToastConfigurationBuilder;
-import org.acra.data.StringFormat;
 import org.amahi.anywhere.job.NetConnectivityJob;
 import org.amahi.anywhere.job.PhotosContentJob;
-import org.amahi.anywhere.server.Api;
+import org.amahi.anywhere.util.AmahiLifeCycleCallback;
+import org.amahi.anywhere.util.AppTheme;
 
 import dagger.ObjectGraph;
-import io.fabric.sdk.android.Fabric;
-import timber.log.Timber;
 
 /**
  * Application declaration. Basically sets things up at the startup time,
@@ -55,10 +46,10 @@ import timber.log.Timber;
 public class AmahiApplication extends Application {
     private ObjectGraph injector;
 
-    private static final String UPLOAD_CHANNEL_ID = "file_upload";
-    private static final String DOWNLOAD_CHANNEL_ID = "file_download";
+    public static final String UPLOAD_CHANNEL_ID = "file_upload";
+    public static final String DOWNLOAD_CHANNEL_ID = "file_download";
 
-    private Boolean isLightThemeEnabled = false;
+    private AppTheme themeEnabled = AppTheme.DEFAULT;
     private static AmahiApplication instance = null;
 
     public static AmahiApplication from(Context context) {
@@ -75,9 +66,10 @@ public class AmahiApplication extends Application {
         super.onCreate();
 
         instance = this;
-        setUpLogging();
-        setUpReporting();
+
         setUpDetecting();
+
+        setUpActivityCallbacks();
 
         setUpInjections();
 
@@ -90,45 +82,39 @@ public class AmahiApplication extends Application {
         }
     }
 
-    private void setUpLogging() {
-        if (isDebugging()) {
-            Timber.plant(new Timber.DebugTree());
-        }
-    }
-
     private void setUpTheme() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        this.isLightThemeEnabled = preferences.getBoolean(getString(R.string.pref_key_light_theme), false);
-        if (this.isLightThemeEnabled) {
-            AppCompatDelegate.setDefaultNightMode(
-                AppCompatDelegate.MODE_NIGHT_NO);
-        } else {
-            AppCompatDelegate.setDefaultNightMode(
-                AppCompatDelegate.MODE_NIGHT_YES);
+        String val = preferences.getString(getString(R.string.pref_key_theme_list), getString(R.string.preference_key_system_default_theme));
+
+        if (val.equals(getString(R.string.preference_key_system_default_theme))) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+            this.themeEnabled = AppTheme.DEFAULT;
+
+        } else if (val.equals(getString(R.string.preference_key_light_theme))) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            this.themeEnabled = AppTheme.LIGHT;
+
+        } else if (val.equals(getString(R.string.preference_key_dark_theme))) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+            this.themeEnabled = AppTheme.DARK;
+
         }
-    }
 
-    public void setIsLightThemeEnabled(Boolean isLightThemeEnabled) {
-        this.isLightThemeEnabled = isLightThemeEnabled;
-    }
-
-    public Boolean isLightThemeEnabled() {
-        return isLightThemeEnabled;
     }
 
     private boolean isDebugging() {
         return BuildConfig.DEBUG;
     }
 
-    private void setUpReporting() {
-        if (!isDebugging()) {
-            Fabric.with(this, new Crashlytics());
-        }
-    }
-
     private void setUpDetecting() {
         if (isDebugging()) {
             StrictMode.enableDefaults();
+        }
+    }
+
+    private void setUpActivityCallbacks() {
+        if (isDebugging()) {
+            registerActivityLifecycleCallbacks(new AmahiLifeCycleCallback());
         }
     }
 
@@ -150,6 +136,14 @@ public class AmahiApplication extends Application {
         }
     }
 
+    public AppTheme getThemeEnabled() {
+        return themeEnabled;
+    }
+
+    public void setThemeEnabled(AppTheme themeEnabled) {
+        this.themeEnabled = themeEnabled;
+    }
+
     public static class JobIds {
         public static final int PHOTOS_CONTENT_JOB = 125;
         public static final int NET_CONNECTIVITY_JOB = 126;
@@ -159,46 +153,18 @@ public class AmahiApplication extends Application {
     private void createNotificationChannel() {
 
         // Creating NotificationChannel only for API 26+
-        int importance = NotificationManager.IMPORTANCE_DEFAULT;
+        int importanceDownload = NotificationManager.IMPORTANCE_LOW;
+        int importanceUpload = NotificationManager.IMPORTANCE_LOW;
 
-        NotificationChannel uploadChannel = new NotificationChannel(UPLOAD_CHANNEL_ID, getString(R.string.upload_channel), importance);
+        NotificationChannel uploadChannel = new NotificationChannel(UPLOAD_CHANNEL_ID, getString(R.string.upload_channel), importanceUpload);
         uploadChannel.setDescription(getString(R.string.upload_channel_desc));
 
-        NotificationChannel downloadChannel = new NotificationChannel(DOWNLOAD_CHANNEL_ID, getString(R.string.download_channel), importance);
+        NotificationChannel downloadChannel = new NotificationChannel(DOWNLOAD_CHANNEL_ID, getString(R.string.download_channel), importanceDownload);
         downloadChannel.setDescription(getString(R.string.download_channel_desc));
 
         // Once the channel is registered, it's importance and behaviour can't be changed
         NotificationManager notificationManager = getSystemService(NotificationManager.class);
         notificationManager.createNotificationChannel(uploadChannel);
         notificationManager.createNotificationChannel(downloadChannel);
-    }
-
-    @Override
-    protected void attachBaseContext(Context base) {
-        super.attachBaseContext(base);
-        if (isDebugging()) {
-
-            CoreConfigurationBuilder builder = new CoreConfigurationBuilder(this)
-                .setBuildConfigClass(BuildConfig.class)
-                .setReportFormat(StringFormat.JSON)
-                .setAlsoReportToAndroidFramework(true)
-                .setReportContent(ReportField.APP_VERSION_CODE)
-                .setReportContent(ReportField.APP_VERSION_NAME)
-                .setReportContent(ReportField.ANDROID_VERSION)
-                .setReportContent(ReportField.PHONE_MODEL)
-                .setReportContent(ReportField.CUSTOM_DATA)
-                .setReportContent(ReportField.STACK_TRACE)
-                .setReportContent(ReportField.LOGCAT);
-
-            builder.getPluginConfigurationBuilder(MailSenderConfigurationBuilder.class)
-                .setMailTo(Api.getAcraEmail())
-                .setEnabled(true);
-
-            builder.getPluginConfigurationBuilder(ToastConfigurationBuilder.class)
-                .setResText(R.string.acra_report_toast)
-                .setEnabled(true);
-
-            ACRA.init(this, builder);
-        }
     }
 }

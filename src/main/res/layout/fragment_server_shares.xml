@@ -17,6 +17,7 @@
   ~ along with Amahi. If not, see <http ://www.gnu.org/licenses/>.
   -->
 <androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/layout_refresh"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -28,22 +29,20 @@
         android:inAnimation="@android:anim/fade_in"
         android:outAnimation="@android:anim/fade_out">
 
-        <ProgressBar
-            android:id="@android:id/progress"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center" />
 
         <FrameLayout
             android:id="@+id/content"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <androidx.recyclerview.widget.RecyclerView
+            <com.l4digital.fastscroll.FastScrollView
                 android:id="@+id/list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scrollbarStyle="outsideOverlay" />
+                app:bubbleColor="@color/accent"
+                app:bubbleTextColor="@color/primary_text"
+                app:handleColor="@color/handle_color"
+                app:bubbleSize="small" />
 
             <LinearLayout
                 android:id="@+id/empty"
@@ -54,7 +53,7 @@
                 android:visibility="gone">
 
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
                     android:text="@string/message_empty_shares"
@@ -66,7 +65,7 @@
                     android:layout_height="8dp" />
 
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center_horizontal"
                     android:text="@string/message_notice_create_some"
@@ -84,9 +83,9 @@
             android:orientation="vertical">
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
+                android:layout_gravity="center_horizontal"
                 android:text="@string/message_error_connection"
                 android:textSize="@dimen/text_large"
                 android:textStyle="bold" />
@@ -96,9 +95,9 @@
                 android:layout_height="8dp" />
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
+                android:layout_gravity="center_horizontal"
                 android:text="@string/message_tap_to_retry"
                 android:textSize="@dimen/text_small" />
 

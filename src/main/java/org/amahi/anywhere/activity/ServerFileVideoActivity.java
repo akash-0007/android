@@ -59,8 +59,10 @@ import org.amahi.anywhere.AmahiApplication;
 import org.amahi.anywhere.R;
 import org.amahi.anywhere.bus.BusProvider;
 import org.amahi.anywhere.bus.DialogButtonClickedEvent;
+import org.amahi.anywhere.db.entities.FileInfo;
 import org.amahi.anywhere.db.entities.PlayedFile;
 import org.amahi.anywhere.db.entities.RecentFile;
+import org.amahi.anywhere.db.repositories.FileInfoRepository;
 import org.amahi.anywhere.db.repositories.PlayedFileRepository;
 import org.amahi.anywhere.db.repositories.RecentFileRepository;
 import org.amahi.anywhere.fragment.ResumeDialogFragment;
@@ -68,6 +70,7 @@ import org.amahi.anywhere.server.client.ServerClient;
 import org.amahi.anywhere.server.model.ServerFile;
 import org.amahi.anywhere.server.model.ServerShare;
 import org.amahi.anywhere.service.VideoService;
+import org.amahi.anywhere.util.DateTime;
 import org.amahi.anywhere.util.FileManager;
 import org.amahi.anywhere.util.FullScreenHelper;
 import org.amahi.anywhere.util.Intents;
@@ -141,6 +144,8 @@ public class ServerFileVideoActivity extends AppCompatActivity implements
         setUpVideoTitle();
 
         setUpVideo();
+
+        setUpLastOpened();
 
         loadState(savedInstanceState);
     }
@@ -217,6 +222,12 @@ public class ServerFileVideoActivity extends AppCompatActivity implements
         fullScreen.init();
     }
 
+    private void setUpLastOpened() {
+        FileInfoRepository fileInfoRepository = new FileInfoRepository(this);
+        FileInfo fileInfo = new FileInfo(getVideoFile().getUniqueKey(), DateTime.getCurrentTime());
+        fileInfoRepository.insert(fileInfo);
+    }
+
     private FrameLayout getSwipeContainer() {
         return findViewById(R.id.swipe_controls_frame);
     }
@@ -238,7 +249,11 @@ public class ServerFileVideoActivity extends AppCompatActivity implements
 
     private void setUpVideoService() {
         Intent intent = new Intent(this, VideoService.class);
-        startService(intent);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent);
+        } else {
+            startService(intent);
+        }
     }
 
     private void setUpVideoServiceBind() {
@@ -667,18 +682,16 @@ public class ServerFileVideoActivity extends AppCompatActivity implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-            case android.R.id.home:
-                finish();
-                return true;
-            case R.id.menu_subtitle:
-                menuItem.setChecked(!menuItem.isChecked());
-                enableSubtitles(menuItem.isChecked());
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(menuItem);
+        int itemId = menuItem.getItemId();
+        if (itemId == android.R.id.home) {
+            finish();
+            return true;
+        } else if (itemId == R.id.menu_subtitle) {
+            menuItem.setChecked(!menuItem.isChecked());
+            enableSubtitles(menuItem.isChecked());
+            return true;
         }
+        return super.onOptionsItemSelected(menuItem);
     }
 
     private void enableSubtitles(boolean enable) {

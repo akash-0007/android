@@ -24,11 +24,6 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-
-import com.google.android.material.textfield.TextInputLayout;
-
-import androidx.appcompat.app.AppCompatDelegate;
-
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
@@ -37,7 +32,10 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatDelegate;
+
 import com.dd.processbutton.iml.ActionProcessButton;
+import com.google.android.material.textfield.TextInputLayout;
 import com.squareup.otto.Subscribe;
 
 import org.amahi.anywhere.AmahiApplication;
@@ -49,6 +47,7 @@ import org.amahi.anywhere.bus.AuthenticationFailedEvent;
 import org.amahi.anywhere.bus.AuthenticationSucceedEvent;
 import org.amahi.anywhere.bus.BusProvider;
 import org.amahi.anywhere.server.client.AmahiClient;
+import org.amahi.anywhere.util.AppTheme;
 import org.amahi.anywhere.util.LocaleHelper;
 import org.amahi.anywhere.util.ViewDirector;
 
@@ -64,17 +63,26 @@ public class AuthenticationActivity extends AccountAuthenticatorAppCompatActivit
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        if (AmahiApplication.getInstance().isLightThemeEnabled()) {
-            getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        } else {
-            getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+
+        AppTheme selectedTheme = AmahiApplication.getInstance().getThemeEnabled();
+        switch (selectedTheme) {
+            case DEFAULT:
+                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                break;
+            case LIGHT:
+                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                break;
+            case DARK:
+                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         }
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_authentication);
 
         setUpInjections();
 
         setUpAuthentication();
+
     }
 
     private void setUpInjections() {
@@ -195,7 +203,7 @@ public class AuthenticationActivity extends AccountAuthenticatorAppCompatActivit
     }
 
     private void authenticate() {
-        amahiClient.authenticate(getUsername(), getPassword());
+        amahiClient.authenticate(getUsername().trim(), getPassword());
     }
 
     @Subscribe

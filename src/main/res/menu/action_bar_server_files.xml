@@ -30,15 +30,24 @@
 
     <item
         android:id="@+id/menu_sort"
+        android:icon="@drawable/ic_sort"
         android:orderInCategory="101"
         android:title="@string/menu_sort"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/media_route_menu_item"
+        android:icon="@drawable/ic_cast"
         android:orderInCategory="102"
         android:title="@string/media_route_menu_item"
         app:actionProviderClass="androidx.mediarouter.app.MediaRouteActionProvider"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/menu_filter"
+        android:icon="@drawable/ic_filter"
+        android:orderInCategory="103"
+        android:title="@string/menu_filter"
         app:showAsAction="always" />
 
 </menu>

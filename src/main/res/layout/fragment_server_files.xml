@@ -18,17 +18,13 @@
   -->
 
 <ViewAnimator xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/animator"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:inAnimation="@android:anim/fade_in"
     android:outAnimation="@android:anim/fade_out">
 
-    <ProgressBar
-        android:id="@android:id/progress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center" />
 
     <FrameLayout
         android:id="@+id/content"
@@ -40,12 +36,15 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <androidx.recyclerview.widget.RecyclerView
+            <com.l4digital.fastscroll.FastScrollView
                 android:id="@android:id/list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layoutAnimation="@anim/recycler_list_anim"
-                android:scrollbarStyle="outsideOverlay" />
+                app:bubbleColor="@color/accent"
+                app:bubbleSize="small"
+                app:bubbleTextColor="@color/primary_text"
+                app:handleColor="@color/handle_color" />
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
@@ -64,7 +63,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:visibility="invisible">
 
             <TextView
                 android:layout_width="match_parent"
@@ -109,9 +109,9 @@
             android:layout_height="8dp" />
 
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
+            android:layout_gravity="center_horizontal"
             android:text="@string/message_tap_to_retry"
             android:textSize="@dimen/text_small" />
 
